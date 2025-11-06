@@ -14,7 +14,7 @@
         /* CONFIGURACIÓN BASE Y ANCHO TOTAL */
         body {
             overflow-x: hidden;
-            /* CAMBIOS APLICADOS PARA EL FONDO Y TEXTO BLANCO */
+            /* FONDO Y TEXTO BLANCO DEL MODO OSCURO */
             background-image: url('assets/bg-b01.png');
             background-attachment: fixed;
             background-size: cover;
@@ -38,7 +38,7 @@
 
         /* ESTILOS DE ENLACES */
         a {
-            color: #ffffff; /* Nuevo color blanco para los enlaces */
+            color: #ffffff; /* Color blanco para los enlaces en ambos modos */
             letter-spacing: -0.3px;
             text-decoration: underline;
         }
@@ -68,7 +68,7 @@
         
         /* Contacto en una línea */
         .contact-info p {
-             color: #ffffff; /* Nuevo color blanco para esta información de contacto */
+             color: #ffffff; /* Color blanco para esta información de contacto */
              font-size: 1em;
              margin: 0;
              white-space: nowrap; 
@@ -87,7 +87,7 @@
         /* Estilo para el título de proyecto (h2) */
         .project-details h2 {
             font-size: 1.5em; 
-            margin: 0 0 0.5em 0; /* Un poco de margen solo abajo del título, si lo deseas */
+            margin: 0 0 0.5em 0;
         }
 
         /* GALERÍA DE IMÁGENES (INCRUSTADAS Y EN FILA) */
@@ -109,65 +109,52 @@
         /* ESTILO PARA LA LÍNEA DIVISORIA */
         hr.project-divider {
             border: none;
-            border-top: 1px solid #ffffff; /* Nueva línea divisoria blanca */
+            border-top: 1px solid #ffffff; /* Línea divisoria blanca en ambos modos */
             margin: 40px 0;
         }
 
-        /* ⬅️ CAMBIOS CSS PARA EL BOTÓN EN LA PARTE SUPERIOR CENTRAL */
+        /* 🌙 CONTENEDOR DEL BOTÓN DE TOGGLE (POSICIONAMIENTO) */
         #mode-toggle-container {
-            /* Contenedor para centrar el botón */
-            text-align: center; /* Centra el contenido inline/inline-block */
-            margin: 20px 0; /* Añade margen arriba y abajo para separarlo */
+            /* Usamos position: absolute para colocarlo arriba del todo sin afectar el flujo */
+            position: absolute;
+            top: 0; /* Arriba del todo */
+            left: 0;
+            width: 100%;
+            text-align: center; /* Centra el contenido */
+            z-index: 2000; /* Asegura que esté por encima de todo */
+            padding: 10px 0; /* Espacio superior */
         }
         
+        /* ☀️ BOTÓN DE TOGGLE (ESTILOS DE TEXTO PLANO) */
         #mode-toggle {
-            /* Quitamos la posición fixed que tenía antes */
-            /* position: fixed; */ 
-            /* bottom: 20px; */
-            /* right: 20px; */
-
-            display: inline-block; /* Permite centrarlo con text-align: center; */
-            padding: 10px 15px;
-            background-color: rgba(255, 255, 255, 0.2); /* Fondo semitransparente (modo oscuro) */
-            color: white; /* Color del texto del botón */
-            border: 1px solid white; /* Borde sutil */
-            border-radius: 8px;
+            display: inline; /* Se comporta como texto */
+            padding: 0;
+            background: none; /* Fondo transparente */
+            border: none; /* Sin borde */
+            color: inherit; /* Hereda el color del texto (blanco) */
             cursor: pointer;
-            font-size: 1.5em; /* Tamaño del texto del botón */
-            z-index: 1000;
-            transition: background-color 0.3s, color 0.3s;
+            font-size: 1em; /* Tamaño normal de texto */
+            margin: 0;
+            /* Reseteamos estilos específicos que pueda tener el navegador */
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
         }
 
-        #mode-toggle:hover {
-            background-color: rgba(255, 255, 255, 0.4);
-        }
-        
-        /* NUEVA CLASE PARA EL MODO CLARO */
+        /* 🌈 CLASE PARA EL MODO CLARO */
         .light-mode {
+            /* Cambia solo la imagen de fondo */
             background-image: url('assets/bg-m01.png') !important;
-            color: black !important;
+            
+            /* El color del texto (color: white;) se mantiene porque no lo sobrescribimos */
         }
 
-        /* Ajustes de color en modo claro */
-        .light-mode a {
-            color: #0000ff !important;
-        }
-        .light-mode .contact-info p {
-            color: #0000ff !important;
-        }
+        /* Aseguramos que los elementos específicos también se queden blancos en modo claro */
+        .light-mode a,
+        .light-mode .contact-info p,
         .light-mode hr.project-divider {
-            border-top: 1px solid #ccc !important;
-        }
-
-        /* Ajustar el botón en modo claro */
-        .light-mode #mode-toggle {
-            background-color: rgba(0, 0, 0, 0.2);
-            color: black;
-            border: 1px solid black;
-        }
-
-        .light-mode #mode-toggle:hover {
-            background-color: rgba(0, 0, 0, 0.4);
+             color: #ffffff !important;
+             border-top-color: #ffffff !important;
         }
         
     </style>
@@ -175,6 +162,13 @@
 </head>
 
 <body>
+    
+    <div id="mode-toggle-container">
+        <button id="mode-toggle" aria-label="Cambiar modo oscuro/claro">
+            ⏾⋆.˚
+        </button>
+    </div>
+
     <main class="container">
 
         <header class="header">
@@ -190,11 +184,6 @@
             </div>
         </header>
         
-        <div id="mode-toggle-container">
-            <button id="mode-toggle" aria-label="Cambiar modo oscuro/claro">
-                ⏾⋆.˚
-            </button>
-        </div>
         <hr class="project-divider"> 
 
         <section class="project-section">
@@ -236,11 +225,11 @@
     </footer>
 
     <script>
-        // Obtener el botón y el cuerpo de la página
+        // LÓGICA JAVASCRIPT DEL TOGGLE
         const toggleButton = document.getElementById('mode-toggle');
         const bodyElement = document.body;
-        const originalText = '⏾⋆.˚';
-        const newText = '⋆⁺₊⋆ ☀︎ ⋆⁺₊⋆';
+        const originalText = '⏾⋆.˚'; // Modo oscuro
+        const newText = '⋆⁺₊⋆ ☀︎ ⋆⁺₊⋆'; // Modo claro
 
         /**
          * Función para alternar entre el modo oscuro (bg-b01) y el modo claro (bg-m01).
