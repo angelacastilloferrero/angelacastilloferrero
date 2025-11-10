@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang='en'>
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=0.6">
+
+    <title>ANGELA QUÉ HACES</title>
+
+    <link rel="icon" href="assets/Iconfactory-Copland-5-A-rose-for-K..32.png">
+    <link rel="stylesheet" type="text/css" href="style.css"> 
+
+    <style>
+        /* CONFIGURACIÓN BASE Y ANCHO TOTAL */
+        body {
+            overflow-x: hidden; 
+            background-size: cover;
+            background-repeat: no-repeat;
+            
+            font-family: Arial, sans-serif;
+            line-height: 1.5;
+            font-size: 1em;
+            margin: 15;
+        }
+
+        /* EL CONTENEDOR OCUPA EL 100% DEL ANCHO */
+        .container {
+            max-width: 100%;
+            width: 100%;
+            margin: 0px 0;
+            padding: 10px; /* Separación de los bordes laterales de la ventana */
+        }
+
+        /* ESTILOS DE ENLACES */
+        a {
+            color: #0000ff;
+            letter-spacing: -0.3px;
+            text-decoration: underline;
+        }
+        
+        .wavy-underline {
+            text-decoration-style: wavy;
+        }
+        
+        /* CABECERA Y CONTACTO (ALINEACIÓN DERECHA) */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            width: 100%;
+            margin-bottom: 40px;
+        }
+
+        /* Quitamos el margen a los párrafos de la cabecera */
+        .main-info p {
+            margin: 0;
+        }
+
+        .contact-info {
+            text-align: right;
+            line-height: 1.5;
+        }
+        
+        /* Contacto en una línea */
+        .contact-info p {
+             color: #0000ff;
+             font-size: 1em;
+             margin: 0;
+             white-space: nowrap; 
+        }
+        
+        /* SECCIONES DE PROYECTO */
+        .project-section {
+            margin-bottom: 50px;
+        }
+
+        /* CLAVE: Elimina el margen de los párrafos en los detalles del proyecto */
+        .project-details p {
+            margin: 0; 
+        }
+
+        /* Estilo para el título de proyecto (h2) */
+        .project-details h2 {
+            font-size: 1.5em; 
+            margin: 0 0 0.5em 0; /* Un poco de margen solo abajo del título, si lo deseas */
+        }
+
+        /* GALERÍA DE IMÁGENES (INCRUSTADAS Y EN FILA) */
+        .image-gallery {
+            display: flex;
+            gap: 5px; 
+            margin-top: 20px;
+            overflow-x: auto; 
+        }
+        
+        .image-gallery img {
+            height: 640px; 
+            width: auto; 
+            display: block;
+            flex-shrink: 0; 
+            object-fit: cover; 
+        }
+        
+        /* ESTILO PARA LA LÍNEA DIVISORIA */
+        hr.project-divider {
+            border: none;
+            border-top: 1px solid #ccc; 
+            margin: 40px 0;
+        }
+        
+        /* === NUEVOS ESTILOS PARA HIGHLIGHTS LATERLY === */
+        
+        /* ESTILOS PARA LA SECCIÓN DE DESTACADOS (HIGHLIGHTS) */
+        .highlights-gallery {
+            /* Usa Flexbox para colocar los elementos en fila */
+            display: flex;
+            /* Distribuye el espacio entre los elementos */
+            justify-content: space-between;
+            /* Un pequeño espacio entre las imágenes */
+            gap: 15px;
+            margin-bottom: 50px; /* Margen debajo de la sección */
+        }
+
+        .highlight-item {
+            /* Cada elemento ocupa aproximadamente un tercio del ancho */
+            width: 33.33%;
+            position: relative; 
+            overflow: hidden;
+            cursor: pointer; /* Indica que es interactivo */
+        }
+
+        /* Estilo para que la imagen ocupe todo el espacio del "highlight-item" */
+        .highlight-item img {
+            display: block;
+            width: 100%;
+            /* Asegura que la imagen mantenga su proporción */
+            height: auto;
+            object-fit: cover;
+            transition: transform 0.3s ease; /* Efecto suave al interactuar */
+        }
+
+        /* Opcional: Efecto al pasar el ratón */
+        .highlight-item img:hover {
+            transform: scale(1.03);
+        }
+
+        /* Estilo para el título "Highlights Lately" */
+        .highlights-title {
+            font-size: 1.8em;
+            margin-bottom: 20px;
+        }
+        /* ============================================== */
+
+    </style>
+
+</head>
+
+<body>
+    <main class="container">
+
+        <header class="header">
+            <div class="main-info">
+                <a href="https://www.instagram.com/angelaquehaces" target="_blank">Ángela Castillo Ferrero</a>
+                <p>Jewelry / Fashion Accessories designer</p>
+                <p>Based in Barcelona</p>
+                <p>Full PDF available upon <u class="wavy-underline">request</u></p>
+            </div>
+
+            <div class="contact-info">
+                <p>castillofereroangela(at)gmail(dot)com +34 686 646 684</p>
+            </div>
+        </header>
+        
+        <h2 class="highlights-title">Highlights Lately</h2>
+        <div class="highlights-gallery">
+            
+            <div class="highlight-item" data-project="Twist Capsule">
+                <a href="#">
+                    <img 
+                        src="https://d2w9rnfcy7mm78.cloudfront.net/40812628/original_172a35df3b3170e2a010826f4a9fe9b0.png?1762184347?bc=0" 
+                        alt="Destacado 1: Twist Capsule" 
+                        loading="eager">
+                    <div class="media-info__paragraph ">
+                        <span class="media-info__name">Twist Capsule</span>
+                    </div>
+                </a>
+            </div>
+
+            <div class="highlight-item" data-project="Twist Capsule">
+                <a href="#">
+                    <img 
+                        src="https://d2w9rnfcy7mm78.cloudfront.net/40812625/original_85f18373dedff59799d870842540b485.png?1762184345?bc=0" 
+                        alt="Destacado 2: Twist Capsule" 
+                        loading="eager">
+                    <div class="media-info__paragraph ">
+                        <span class="media-info__name">Twist Capsule</span>
+                    </div>
+                </a>
+            </div>
+
+            <div class="highlight-item" data-project="Twist Capsule">
+                <a href="#">
+                    <img 
+                        src="https://d2w9rnfcy7mm78.cloudfront.net/40812631/original_19f7e92dfe38cfa2b98cf28f4ba0f9c4.png?1762184353?bc=0" 
+                        alt="Destacado 3: Twist Capsule" 
+                        loading="eager">
+                    <div class="media-info__paragraph ">
+                        <span class="media-info__name">Twist Capsule</span>
+                    </div>
+                </a>
+            </div>
+
+        </div>
+        <hr class="project-divider"> 
+
+        <section class="project-section">
+            <div class="project-details">
+                <p>Twist Capsule <i>[PDPAOLA]</i></p>
+                <p class="meta">Crafted in 18K gold plated 925 silver, hand-set cubic zirconia pavé/sodalite gemstone</p>
+                <p>Collection conceptualization. Concept Development. Material Selection. Technical Specifications. Feedback Integration. Goordination and supervision of the project. Definition of Quality Standards.</p>
+            </div>
+            
+            <div class="image-gallery">
+                <img src="https://d2w9rnfcy7mm78.cloudfront.net/40812628/original_172a35df3b3170e2a010826f4a9fe9b0.png?1762184347?bc=0" alt="Imagen del proyecto Twist Capsule 1">
+                <img src="https://d2w9rnfcy7mm78.cloudfront.net/40812625/original_85f18373dedff59799d870842540b485.png?1762184345?bc=0" alt="Imagen del proyecto Twist Capsule 2">
+                <img src="https://d2w9rnfcy7mm78.cloudfront.net/40812631/original_19f7e92dfe38cfa2b98cf28f4ba0f9c4.png?1762184353?bc=0" alt="Imagen del proyecto Twist Capsule 3">
+            </div>
+        </section>
+
+        <hr class="project-divider"> 
+
+        <section class="project-section">
+            <div class="project-details">
+                <p>Sant Valentin Collection 2025 <i>[RÍGIDO]</i></p>
+                <p class="meta">925 silver</p>
+                <p>Padlock and Perfume flask pendant.</p>
+            </div>
+            
+            <div class="image-gallery">
+                <img src="placeholder-5.jpg" alt="Imagen 1">
+                <img src="placeholder-6.jpg" alt="Imagen 2">
+                <img src="placeholder-7.jpg" alt="Imagen 3">
+                <img src="placeholder-8.jpg" alt="Imagen 4">
+                <img src="placeholder-9.jpg" alt="Imagen 5">
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="footer container">
+        <p class="last-updated" style="text-align: right;">last updated: 03/nov/25</p>
+    </footer>
+</body>
+</html>
