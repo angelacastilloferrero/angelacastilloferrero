@@ -87,12 +87,10 @@
         }
         
         .window {
-            /* Permite moverlas libremente */
             position: absolute; 
             
-            /* Les da un tamaño inicial. */
             width: 300px; 
-            min-width: 150px; /* Tamaño mínimo */
+            min-width: 150px; 
             min-height: 100px;
             
             background-color: #f0f0f0; 
@@ -100,13 +98,13 @@
             box-shadow: 5px 5px 0px #888; 
             z-index: 100;
             
-            /* Desactiva el cambio de tamaño por CSS, lo manejamos con el JS */
             resize: none; 
-            overflow: hidden; /* Oculta el contenido si es muy grande */
+            overflow: hidden; 
+            cursor: pointer; /* Cursor que indica que es interactivo */
         }
 
         .window-header {
-            /* Área que se puede arrastrar */
+            /* Mantenemos el cursor 'move' en el header, aunque ya no sea la única zona */
             cursor: move; 
             
             background-color: #ccc;
@@ -119,16 +117,17 @@
 
         .window-body {
             padding: 5px;
-            height: calc(100% - 31px); /* Resta la altura del header (aprox 31px) */
+            height: calc(100% - 31px); 
             overflow: hidden;
+            /* La superficie del body también permite arrastrar */
+            cursor: move; 
         }
 
         .window-body img {
-            /* La imagen ocupa todo el cuerpo de la ventana */
             display: block;
             width: 100%;
-            height: 100%; /* CLAVE: Para que se redimensione dentro del body */
-            object-fit: contain; /* Para que la imagen se ajuste sin cortarse */
+            height: 100%; 
+            object-fit: contain; 
         }
         
         /* Asa para redimensionar */
@@ -139,7 +138,7 @@
             width: 15px;
             height: 15px;
             background: #333;
-            cursor: nwse-resize; /* Cursor de redimensionamiento */
+            cursor: nwse-resize; 
             z-index: 10;
         }
 
@@ -215,36 +214,28 @@
         const draggableElements = document.querySelectorAll('.window');
         
         let activeItem = null; 
-        let isResizing = false; // Nueva variable para controlar la redimensión
+        let isResizing = false;
         
         let currentX, currentY; 
-        let initialX, initialY; 
-        let xOffset = 0, yOffset = 0;
-        
-        let initialWidth, initialHeight; // Variables para la redimensión
+        let initialX, initialY; // Coordenadas del ratón/toque al inicio del evento
+        let xOffset, yOffset;   // Distancia del clic al top/left del elemento
 
+        let initialWidth, initialHeight; 
         let highestZIndex = 100;
 
         // 1. Configuración de escuchadores de eventos
         draggableElements.forEach(item => {
-            const header = item.querySelector('.window-header');
             const resizeHandle = item.querySelector('.resize-handle');
             
-            // Arrastre (Header)
-            if (header) {
-                header.addEventListener('mousedown', dragStart);
-                header.addEventListener('touchstart', dragStart); 
-            }
+            // Arrastre (Ahora en toda la ventana, excepto en el resize-handle)
+            item.addEventListener('mousedown', startInteraction);
+            item.addEventListener('touchstart', startInteraction); 
             
             // Redimensión (Handle)
             if (resizeHandle) {
                 resizeHandle.addEventListener('mousedown', resizeStart);
                 resizeHandle.addEventListener('touchstart', resizeStart);
             }
-
-            // Elevar al hacer clic
-            item.addEventListener('mousedown', elevateWindow);
-            item.addEventListener('touchstart', elevateWindow);
         });
 
         // Eventos globales en el documento
@@ -254,51 +245,58 @@
         document.addEventListener('touchmove', drag); 
         
         // Función para elevar la ventana clicada
-        function elevateWindow(e) {
-            const clickedWindow = e.target.closest('.window');
-            if (clickedWindow) {
-                highestZIndex++;
-                clickedWindow.style.zIndex = highestZIndex;
-            }
+        function elevateWindow(clickedWindow) {
+            highestZIndex++;
+            clickedWindow.style.zIndex = highestZIndex;
         }
         
-        /* ==================== FUNCIONES DE ARRASTRE ==================== */
+        /* ==================== INICIO DE INTERACCIÓN (Arrastre) ==================== */
 
-        function dragStart(e) {
+        function startInteraction(e) {
+            // Si el clic viene del handle de redimensión, salimos
+            if (e.target.classList.contains('resize-handle')) {
+                return;
+            }
+            
             e.preventDefault(); 
-            isResizing = false; // Asegura que no estemos en modo redimensión
+            isResizing = false;
             
             const isTouch = e.type.includes('touch');
             const eventClientX = isTouch ? e.touches[0].clientX : e.clientX;
             const eventClientY = isTouch ? e.touches[0].clientY : e.clientY;
 
-            activeItem = this.closest('.window');
-            activeItem.classList.add('active-drag'); // Estilo de arrastre
+            activeItem = this; // La ventana completa es el activeItem
+            activeItem.classList.add('active-drag');
             
-            // Reajusta las coordenadas del desplazamiento
-            xOffset = activeItem.offsetLeft;
-            yOffset = activeItem.offsetTop;
-
-            initialX = eventClientX - xOffset;
-            initialY = eventClientY - yOffset;
+            elevateWindow(activeItem); // Eleva la ventana al hacer clic
+            
+            // NUEVO CÁLCULO DE OFFSET para evitar el salto
+            const rect = activeItem.getBoundingClientRect();
+            
+            // Distancia del clic al borde izquierdo/superior de la ventana
+            xOffset = eventClientX - rect.left;
+            yOffset = eventClientY - rect.top;
+            
+            // Guardamos las coordenadas iniciales del ratón/toque
+            initialX = eventClientX;
+            initialY = eventClientY;
         }
         
-        /* ==================== FUNCIONES DE REDIMENSIÓN ==================== */
+        /* ==================== INICIO DE REDIMENSIÓN ==================== */
 
         function resizeStart(e) {
             e.preventDefault();
             
             isResizing = true;
             const isTouch = e.type.includes('touch');
-            const eventClientX = isTouch ? e.touches[0].clientX : e.clientX;
-            const eventClientY = isTouch ? e.touches[0].clientY : e.clientY;
-
-            activeItem = this.closest('.window');
-            activeItem.classList.add('active-resize'); // Estilo de redimensión
             
-            // Posición inicial del ratón
-            initialX = eventClientX;
-            initialY = eventClientY;
+            activeItem = this.closest('.window');
+            activeItem.classList.add('active-resize');
+            elevateWindow(activeItem);
+
+            // Posición inicial del ratón para el cálculo del delta
+            initialX = isTouch ? e.touches[0].clientX : e.clientX;
+            initialY = isTouch ? e.touches[0].clientY : e.clientY;
 
             // Dimensiones iniciales del elemento
             initialWidth = activeItem.offsetWidth;
@@ -330,10 +328,13 @@
 
             } else {
                 // Modo Arrastre
-                currentX = eventClientX - initialX;
-                currentY = eventClientY - initialY;
-
-                setTranslate(currentX, currentY, activeItem);
+                // La nueva posición es la posición del ratón menos el offset inicial
+                currentX = eventClientX - xOffset;
+                currentY = eventClientY - yOffset;
+                
+                // Aplicamos la posición final directamente al top/left
+                activeItem.style.left = currentX + 'px';
+                activeItem.style.top = currentY + 'px';
             }
         }
 
@@ -344,23 +345,15 @@
             if (!activeItem) return;
 
             activeItem.classList.remove('active-drag', 'active-resize');
-
-            if (!isResizing) {
-                // Modo Arrastre: aplica la posición final
-                activeItem.style.left = currentX + 'px';
-                activeItem.style.top = currentY + 'px';
-                activeItem.style.transform = 'translate3d(0, 0, 0)'; 
-            }
             
+            // En este script, ya no usamos 'transform' para el arrastre, por lo que no hay que resetearlo.
+
             // Resetea las variables de control
             activeItem = null;
             isResizing = false;
         }
-
-        // Función de utilidad para aplicar la posición con transform
-        function setTranslate(xPos, yPos, el) {
-            el.style.transform = "translate3d(" + xPos + "px, " + yPos + "px, 0)";
-        }
+        
+        // NOTA: Eliminamos la función setTranslate() ya que ahora movemos con top/left para mayor simplicidad.
     </script>
     </body>
 </html>
