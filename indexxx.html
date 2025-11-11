@@ -727,7 +727,7 @@ a {
 function handlePortfolioRequest() {
     const emailInput = document.getElementById('emailInput');
     const portfolioButton = document.getElementById('portfolioButton');
-    const recipientEmail = "ancelacastilloferrero@gmail.com";
+    const recipientEmail = "castilloferreroangela@gmail.com";
     
     // Si el input está visible y el correo es válido (o tiene algún contenido)
     if (emailInput.classList.contains('visible') && emailInput.value.length > 0) {
@@ -766,9 +766,9 @@ function checkEmailStatus() {
     const emailPattern = /\S+@\S+\.(com|net|org|es|gov|edu|io|co|info|biz)/i;
 
     if (emailInput.classList.contains('visible') && emailPattern.test(emailInput.value)) {
-        portfolioButton.textContent = "SEND MAIL";
+        portfolioButton.textContent = "send!";
     } else {
-        portfolioButton.textContent = "REQUEST FULL PORTFOLIO";
+        portfolioButton.textContent = "request full portfolio";
     }
 }
     </script>
