@@ -220,6 +220,39 @@
         .active-drag, .active-resize {
             z-index: 1000;
         }
+
+        /* --- NUEVOS ESTILOS A AÑADIR EN <style> --- */
+
+/* Contenedor flexible para alinear el input y el botón */
+.request-form {
+    display: flex;
+    align-items: center; /* Centrar verticalmente el input y el botón */
+    margin-top: 5px; /* Mantiene la separación con el email anterior */
+    transition: width 0.3s;
+}
+
+/* Estilos para el campo de correo (inicialmente oculto o pequeño) */
+.email-input {
+    border: 1px solid #333;
+    background-color: white;
+    color: black;
+    font-size: 11pt;
+    padding: 2px 4px;
+    margin-right: 5px; /* Espacio entre el input y el botón */
+    width: 0; /* Empieza oculto */
+    opacity: 0;
+    visibility: hidden;
+    transition: width 0.3s, opacity 0.3s;
+    box-sizing: border-box; /* Asegura que el padding no afecte el width total */
+    height: 100%; /* Igualar la altura del botón */
+}
+
+/* Clase para mostrar el campo de correo */
+.email-input.visible {
+    width: 150px; /* Ancho deseado para el campo de correo */
+    opacity: 1;
+    visibility: visible;
+}
     </style>
 
 </head>
@@ -236,11 +269,23 @@
             </div>
 
             <div class="contact-info">
-                <p>castillofereroangela@gmail.com</p>
-                <button class="button button-primary" onclick="alert(añadir correo?)">
-                    REQUEST FULL PORTFOLIO
-                </button>
-            </div>
+                <p>castillofereroangela@gmail.com</p>
+
+                <div class="request-form" id="requestForm">
+                    <input type="email" 
+                           id="emailInput" 
+                           class="email-input" 
+                           placeholder="your@email.com" 
+                           oninput="checkEmailStatus()" 
+                           required>
+
+                    <button class="button button-primary" 
+                            id="portfolioButton" 
+                            onclick="handlePortfolioRequest()">
+                        REQUEST FULL PORTFOLIO
+                    </button>
+                </div>
+            </div>
         </header>
 
        <div class="about-container">
@@ -679,6 +724,57 @@
                 randomizeWindowPosition(item); // Reajusta los límites
             });
         });
+
+        // --- NUEVAS FUNCIONES A AÑADIR EN <script> ---
+
+// 1. Maneja el estado inicial y el envío final
+function handlePortfolioRequest() {
+    const emailInput = document.getElementById('emailInput');
+    const portfolioButton = document.getElementById('portfolioButton');
+    const recipientEmail = "ancelacastilloferrero@gmail.com";
+    
+    // Si el input está visible y el correo es válido (o tiene algún contenido)
+    if (emailInput.classList.contains('visible') && emailInput.value.length > 0) {
+        
+        // Crear el enlace mailto:
+        // El cuerpo del correo incluirá el email de la persona para que lo veas fácilmente.
+        const subject = "Solicitud de Portfolio Completo";
+        const body = `Hola, me gustaría solicitar el portfolio completo. Mi correo es: ${emailInput.value}`;
+        
+        const mailtoLink = `mailto:${recipientEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+        
+        // Abrir el cliente de correo del usuario
+        window.location.href = mailtoLink;
+        
+        // Opcional: Ocultar el input y restablecer el botón después del envío (aunque el usuario ya estará en su cliente de correo)
+        // emailInput.classList.remove('visible');
+        // emailInput.value = '';
+        // portfolioButton.textContent = "REQUEST FULL PORTFOLIO";
+        
+    } else {
+        // Estado inicial: Muestra el campo de correo
+        emailInput.classList.add('visible');
+        emailInput.focus(); // Pone el cursor en el campo
+        
+        // Comprueba si ya está listo para "SEND MAIL" (en caso de que el usuario haga clic de nuevo)
+        checkEmailStatus();
+    }
+}
+
+// 2. Comprueba el estado del campo de correo para cambiar el texto del botón
+function checkEmailStatus() {
+    const emailInput = document.getElementById('emailInput');
+    const portfolioButton = document.getElementById('portfolioButton');
+    
+    // Utiliza un regex simple para comprobar si parece un correo
+    const emailPattern = /\S+@\S+\.\S+/; 
+
+    if (emailInput.classList.contains('visible') && emailPattern.test(emailInput.value)) {
+        portfolioButton.textContent = "SEND MAIL";
+    } else {
+        portfolioButton.textContent = "REQUEST FULL PORTFOLIO";
+    }
+}
     </script>
 </body>
 </html>
