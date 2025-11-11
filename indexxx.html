@@ -46,18 +46,17 @@
         }
 
         /* CABECERA Y CONTACTO (ALINEACIÓN DERECHA) */
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            width: 100%;
-            margin-bottom: 20px;
+            .header {
+                display: flex;
+                justify-content: space-between;
+                /* Mantenemos flex-start para alinear todo en la parte superior */
+                align-items: flex-start;
+                width: 100%;
+                margin-bottom: 20px;
         }
 
         /* Contenedor principal de la izquierda */
         .main-info {
-            display: flex;
-            flex-direction: column;
             align-items: flex-start;
         }
 
@@ -69,18 +68,21 @@
         }
 
 
-        /* Contenedor de contacto y botón (derecha) */
         .contact-info {
-            display: flex; 
+            display: flex;
             flex-direction: column;
             align-items: flex-end;
+            /* Eliminamos cualquier posible margen superior residual. */
+            margin-top: 0;
         }
 
         .contact-info p {
-             color: #0000ff;
-             font-size: 1em;
-             margin: 0;
-             white-space: nowrap;
+            color: #0000ff;
+            font-size: 1em;
+            /* **AJUSTE CLAVE:** Elimina el margen superior/inferior por defecto del <p> */
+            /* que estaba causando la desalineación. */
+            margin: 0;
+            white-space: nowrap;
         }
         
         /* === ESTILOS DEL BOTÓN (PORTFOLIO REQUEST) === */
