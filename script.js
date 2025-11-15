@@ -13,6 +13,9 @@ let initialRatio;
 let initialDistance = 0; // Distancia inicial entre los dos dedos para redimensionar
 let highestZIndex = 100;
 
+// Nuevas variables para un redimensionamiento por pellizco limpio
+let initialLeft, initialTop; 
+
 const FOOTER_HEIGHT = 35; 
 const BODY_MARGIN = 15; // El margen del body definido en CSS
 
@@ -22,7 +25,7 @@ const BODY_MARGIN = 15; // El margen del body definido en CSS
 function randomizeWindowPosition(windowElement) {
     const aboutContainer = document.querySelector('.about-container');
 
-    if (!aboutContainer) return; // Si no hay About, salimos
+    if (!aboutContainer) return;
 
     const viewportWidth = window.innerWidth;
     const viewportHeight = window.innerHeight;
@@ -43,8 +46,8 @@ function randomizeWindowPosition(windowElement) {
 
     // 3. Definir un rango de dispersión (± 400px para mayor separación lateral).
     const scatterRange = 600; 
-    const randomOffsetX = Math.random() * scatterRange - (scatterRange / 3); // De -200 a +200
-    const randomOffsetY = Math.random() * scatterRange - (scatterRange / 3); // De -200 a +200
+    const randomOffsetX = Math.random() * scatterRange - (scatterRange / 3);
+    const randomOffsetY = Math.random() * scatterRange - (scatterRange / 3);
 
     let targetX = baseX + randomOffsetX;
     let targetY = baseY + randomOffsetY;
@@ -67,7 +70,6 @@ function randomizeWindowPosition(windowElement) {
 // Función para actualizar las dimensiones en el footer del texto
 function updateDimensionsText(windowElement) {
     const currentWidth = Math.round(windowElement.offsetWidth);
-    // El alto de la imagen es el alto total menos la altura fija del footer
     const currentBodyHeight = Math.round(windowElement.offsetHeight - FOOTER_HEIGHT);
 
     const dimensionsSpan = windowElement.querySelector('.dimensions-text');
@@ -82,7 +84,6 @@ function initializeWindow(windowElement) {
 
     const loadHandler = () => {
         setInitialDimensions(windowElement, img);
-        // Llamamos a randomizeWindowPosition aquí para obtener la posición centrada
         randomizeWindowPosition(windowElement); 
     };
 
@@ -97,11 +98,9 @@ function initializeWindow(windowElement) {
 }
 
 function setInitialDimensions(windowElement, img) {
-    // Tamaño inicial aleatorio (pero proporcional)
     const MIN_WIDTH = 200;
     const MAX_WIDTH = 400;
 
-    // Generar un ancho aleatorio entre 200px y 400px
     const randomWidth = Math.random() * (MAX_WIDTH - MIN_WIDTH) + MIN_WIDTH;
 
     let ratio = 1;
@@ -150,12 +149,12 @@ function elevateWindow(clickedWindow) {
 /* ==================== INICIO DE INTERACCIÓN (Arrastre/Pellizco) ==================== */
 
 function startInteraction(e) {
-    // Si ya estamos redimensionando con el handle, no hacemos nada más
+    // Si ya estamos redimensionando con el handle, no hacemos nada
     if (e.target.classList.contains('resize-handle')) {
         return;
     }
     
-    // Ignorar el clic si se hace en el handle de redimensión, botón o enlaces
+    // Ignorar clic en controles interactivos
     if (e.target.tagName === 'BUTTON' || e.target.tagName === 'A' || e.target.tagName === 'INPUT') {
         return;
     }
@@ -166,11 +165,11 @@ function startInteraction(e) {
         // --- INICIO DE PELLIZCO (PINCH-TO-ZOOM) ---
         e.preventDefault();
         
-        activeItem = this; // 'this' es la ventana (.window)
+        activeItem = this; 
         elevateWindow(activeItem);
         
         isPinching = true;
-        isResizing = true; // Usamos la bandera de redimensionar para el drag
+        isResizing = true; 
         activeItem.classList.add('active-resize');
 
         // 1. Calcular la distancia inicial entre los dos dedos
@@ -178,16 +177,17 @@ function startInteraction(e) {
         const dy = e.touches[0].clientY - e.touches[1].clientY;
         initialDistance = Math.sqrt(dx * dx + dy * dy);
 
-        // 2. Guardar las dimensiones iniciales
+        // 2. Guardar dimensiones y posición inicial
         initialWidth = activeItem.offsetWidth;
         initialHeight = activeItem.offsetHeight;
+        initialLeft = parseFloat(activeItem.style.left) || 0;
+        initialTop = parseFloat(activeItem.style.top) || 0;
         initialRatio = parseFloat(activeItem.getAttribute('data-aspect-ratio')) || (initialWidth / (initialHeight - FOOTER_HEIGHT));
 
-        return; // Salimos, no queremos arrastrar mientras pellizcamos
+        return; 
     }
     
     // --- INICIO DE ARRASTRE (DRAG) ---
-    // Si hay más de un toque pero no dos exactos, ignoramos el arrastre
     if (isTouch && e.touches.length > 1) return; 
 
     e.preventDefault();
@@ -217,7 +217,7 @@ function resizeStart(e) {
     e.preventDefault();
 
     isResizing = true;
-    isPinching = false; // Asegurarse de que no estamos en modo pellizco si usamos el handle
+    isPinching = false;
     const isTouch = e.type.includes('touch');
 
     activeItem = this.closest('.window');
@@ -241,34 +241,37 @@ function drag(e) {
     e.preventDefault();
 
     const isTouch = e.type.includes('touch');
-    // Usamos el primer toque para el arrastre y el cursor. Puede ser null si el primer toque ya no existe
     const eventClientX = isTouch ? (e.touches[0] ? e.touches[0].clientX : null) : e.clientX;
     const eventClientY = isTouch ? (e.touches[0] ? e.touches[0].clientY : null) : e.clientY;
 
     const viewportWidth = window.innerWidth;
     const viewportHeight = window.innerHeight;
-    const itemWidth = activeItem.offsetWidth;
-    const itemHeight = activeItem.offsetHeight;
     const MIN_LEFT = BODY_MARGIN;
     const MIN_TOP = BODY_MARGIN;
 
     if (isResizing) {
-        let newWidth, newBodyHeight;
+        let newWidth, newBodyHeight, newLeft, newTop;
 
         if (isPinching && isTouch && e.touches.length === 2) {
-            // --- MODO REDIMENSIÓN: PELLIZCO (PINCH-TO-ZOOM) ---
+            // --- MODO REDIMENSIÓN: PELLIZCO (PINCH-TO-ZOOM) - LIMPIO ---
             const currentDx = e.touches[0].clientX - e.touches[1].clientX;
             const currentDy = e.touches[0].clientY - e.touches[1].clientY;
             const currentDistance = Math.sqrt(currentDx * currentDx + currentDy * currentDy);
             
-            // Factor de escala
             const scaleFactor = currentDistance / initialDistance;
 
-            // Aplicar el factor de escala a las dimensiones iniciales
             newWidth = initialWidth * scaleFactor;
             newBodyHeight = (initialHeight - FOOTER_HEIGHT) * scaleFactor;
 
-        } else {
+            // Para redimensionar desde el centro, calculamos cuánto ha cambiado
+            // y aplicamos la mitad de ese cambio como desplazamiento (left/top).
+            const deltaWidth = newWidth - initialWidth;
+            const deltaHeight = (newBodyHeight + FOOTER_HEIGHT) - initialHeight;
+
+            newLeft = initialLeft - (deltaWidth / 2);
+            newTop = initialTop - (deltaHeight / 2);
+
+        } else if (!isPinching) {
             // --- MODO REDIMENSIÓN: HANDLE INFERIOR DERECHO ---
             const deltaX = eventClientX - initialX;
             const deltaY = eventClientY - initialY;
@@ -284,48 +287,68 @@ function drag(e) {
                 if (newBodyHeight > 0) {
                     newWidth = newBodyHeight * initialRatio;
                 } else {
-                    newBodyHeight = 100 - FOOTER_HEIGHT; // Mínimo 100px de altura de ventana
+                    newBodyHeight = 100 - FOOTER_HEIGHT;
                     newWidth = newBodyHeight * initialRatio;
                 }
             }
+            newLeft = parseFloat(activeItem.style.left) || 0; // Se mantiene la posición
+            newTop = parseFloat(activeItem.style.top) || 0; // Se mantiene la posición
         }
         
+        // Si no se pudo calcular (p.ej., si isPinching se desactiva antes de dragEnd), salimos
+        if (!newWidth || !newBodyHeight) return; 
+
         // --- LÓGICA DE APLICACIÓN DE TAMAÑO Y LÍMITES (Común a Handle y Pinch) ---
         let newHeight = newBodyHeight + FOOTER_HEIGHT;
 
         if (newWidth >= 150 && newHeight >= 100) {
-            // Limitar el tamaño de redimensión para no salirse de la web
-            let currentLeft = parseFloat(activeItem.style.left) || 0;
-            let currentTop = parseFloat(activeItem.style.top) || 0;
+            
+            // 1. Aplicar límites de redimensionamiento (no salirse por la derecha/abajo)
+            let maxPossibleWidth = viewportWidth - newLeft - BODY_MARGIN;
+            let maxPossibleHeight = viewportHeight - newTop - BODY_MARGIN;
 
-            let maxPossibleWidth = viewportWidth - currentLeft - BODY_MARGIN;
-            let maxPossibleHeight = viewportHeight - currentTop - BODY_MARGIN;
-
+            // Limitamos ancho
             if (newWidth > maxPossibleWidth) {
                  newWidth = maxPossibleWidth;
                  newBodyHeight = newWidth / initialRatio;
                  newHeight = newBodyHeight + FOOTER_HEIGHT;
             }
-
+            // Limitamos alto (ajustando de nuevo el ancho por proporción)
             if (newHeight > maxPossibleHeight) {
                  newHeight = maxPossibleHeight;
                  newBodyHeight = newHeight - FOOTER_HEIGHT;
                  newWidth = newBodyHeight * initialRatio;
             }
+            
+            // 2. Aplicar límites de posición (no salirse por la izquierda/arriba)
+            let finalLeft = Math.min(Math.max(newLeft, MIN_LEFT), viewportWidth - newWidth - BODY_MARGIN);
+            let finalTop = Math.min(Math.max(newTop, MIN_TOP), viewportHeight - newHeight - BODY_MARGIN);
+            
+            // Si la posición se ha ajustado debido a los límites, recalcular el ancho y alto
+            // para asegurar que no se salen de los bordes.
+            if (isPinching && (finalLeft !== newLeft || finalTop !== newTop)) {
+                // Si la posición se mueve, el centro de redimensionamiento se arruina
+                // En este caso, simplemente aplicamos la nueva posición y el tamaño actual.
+            }
 
             activeItem.style.width = newWidth + 'px';
             activeItem.style.height = newHeight + 'px';
+            activeItem.style.left = finalLeft + 'px';
+            activeItem.style.top = finalTop + 'px';
+
             updateDimensionsText(activeItem);
         }
 
     } else {
         // Modo Arrastre
-        if (eventClientX === null || eventClientY === null) return; // Evitar arrastre con 2 toques que pierden e.touches[0]
+        if (eventClientX === null || eventClientY === null) return; 
         
         currentX = eventClientX - xOffset;
         currentY = eventClientY - yOffset;
 
-        // Asegurarse de que no se salga de la web
+        const itemWidth = activeItem.offsetWidth;
+        const itemHeight = activeItem.offsetHeight;
+
         const maxX = viewportWidth - itemWidth - BODY_MARGIN;
         const maxY = viewportHeight - itemHeight - BODY_MARGIN;
 
@@ -355,8 +378,8 @@ function dragEnd(e) {
 
     activeItem = null;
     isResizing = false;
-    isPinching = false; // Reiniciamos la bandera de pellizco
-    initialDistance = 0; // Reiniciamos la distancia inicial
+    isPinching = false;
+    initialDistance = 0;
 }
 
 // Llamada inicial para asegurar que todas las imágenes se inicialicen
@@ -367,7 +390,7 @@ window.addEventListener('load', () => {
 // Al redimensionar la ventana del navegador, ajusta la posición de las ventanas abiertas.
 window.addEventListener('resize', () => {
     draggableElements.forEach(item => {
-        randomizeWindowPosition(item); // Reajusta los límites
+        randomizeWindowPosition(item);
     });
 });
 
@@ -394,9 +417,9 @@ window.handlePortfolioRequest = function() {
     } else {
         // Estado inicial: Muestra el campo de correo
         emailInput.classList.add('visible');
-        emailInput.focus(); // Pone el cursor en el campo
+        emailInput.focus();
         
-        // Comprueba si ya está listo para "send!" (en caso de que el usuario haga clic de nuevo)
+        // Comprueba si ya está listo para "send!"
         checkEmailStatus();
     }
 }
