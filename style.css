@@ -200,9 +200,39 @@ a {
     right: 0;
     width: 10px;
     height: 10px;
-    background: #0d0d0d;
+    background: #0d0d0d; /* Fondo negro */
     cursor: nwse-resize;
     z-index: 10;
+    overflow: hidden; /* Mantenemos esto por si acaso */
+}
+
+/* El pseudo-elemento crea el triángulo blanco diagonal */
+.resize-handle::after {
+    content: '';
+    display: block;
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 0;
+    height: 0;
+    
+    /* Creamos un triángulo con bordes que apunta hacia la esquina. */
+    /* La flecha blanca diagonal se forma con los bordes superior e izquierdo. */
+    /* Los bordes tienen que ser más grandes que el handle para rellenar */
+    border-bottom: 10px solid white; 
+    border-left: 10px solid white;
+    
+    /* Los otros bordes son transparentes */
+    border-top: 10px solid transparent; 
+    border-right: 10px solid transparent; 
+    
+    /* Lo rotamos para darle la inclinación perfecta */
+    transform: rotate(-45deg);
+    transform-origin: 100% 100%; /* Rotar desde la esquina inferior derecha */
+
+    /* Posicionamiento fino */
+    right: -5px; 
+    bottom: -5px; 
 }
 
 .active-drag, .active-resize {
