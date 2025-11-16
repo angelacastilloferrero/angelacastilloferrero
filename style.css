@@ -18,9 +18,11 @@ body {
 }
 
 ::selection {
-  background: #874800;
-  color: #0000ff;
-  text-shadow: 1px 1px 1px white, 1px -1px 1px #0000ff, -1px 1px 1px #0000ff, -1px -1px 1px #0000ff;
+  background: #110022; /* Fondo casi negro */
+  color: #c9fff3; /* Texto de color aqua/menta brillante */
+  text-shadow: 
+    0 0 5px #14e0c8, /* Resplandor azul claro */
+    0 0 10px #7b4397; /* Resplandor morado más sutil */
 }
 
 
