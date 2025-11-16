@@ -18,11 +18,9 @@ body {
 }
 
 ::selection {
-  /* Establece el texto con una ligera transparencia */
-  color: rgba(255, 255, 255, 0.9);
-  
-  /* Usa un color sólido de fondo (propiedad permitida) */
-  background: #ff66aa; 
+  background: #874800;
+  color: #0000ff;
+  text-shadow: 1px 1px 1px white, 1px -1px 1px #0000ff, -1px 1px 1px #0000ff, -1px -1px 1px #0000ff;
 }
 
 
