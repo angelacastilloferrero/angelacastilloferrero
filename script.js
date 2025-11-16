@@ -267,165 +267,168 @@
     }
 
 
-    /* ==================== EVENT HANDLER (DRAG/RESIZE) ==================== */
+/* ==================== EVENT HANDLER (DRAG/RESIZE) ==================== */
 
-    function drag(e) {
-        if (!activeItem) {
-            // Lógica de cursor para Desktop cuando no estamos arrastrando
-            if (e.type === 'mousemove' && !e.target.closest('.window')) {
-                document.body.style.cursor = 'default';
-            }
-            return;
+function drag(e) {
+    if (!activeItem) {
+        // Lógica de cursor para Desktop cuando no estamos arrastrando
+        if (e.type === 'mousemove' && !e.target.closest('.window')) {
+            document.body.style.cursor = 'default';
         }
-        
-        e.preventDefault();
-
-        const isTouch = e.type.includes('touch');
-        const eventClientX = isTouch ? (e.touches[0] ? e.touches[0].clientX : null) : e.clientX;
-        const eventClientY = isTouch ? (e.touches[0] ? e.touches[0].clientY : null) : e.clientY;
-
-        const viewportWidth = window.innerWidth;
-        const viewportHeight = window.innerHeight;
-        const MIN_LEFT = BODY_MARGIN;
-        const MIN_TOP = BODY_MARGIN;
-
-        if (isResizing) {
-            let newWidth, newBodyHeight, newLeft, newTop;
-            newLeft = initialLeft;
-            newTop = initialTop;
-
-            if (isPinching && isTouch && e.touches.length === 2) {
-                // --- MODO REDIMENSIÓN: PELLIZCO ---
-                const currentDx = e.touches[0].clientX - e.touches[1].clientX;
-                const currentDy = e.touches[0].clientY - e.touches[1].clientY;
-                const currentDistance = Math.sqrt(currentDx * currentDx + currentDy * currentDy);
-                
-                const scaleFactor = currentDistance / initialDistance;
-
-                newWidth = initialWidth * scaleFactor;
-                newBodyHeight = (initialHeight - FOOTER_HEIGHT) * scaleFactor;
-
-                const deltaWidth = newWidth - initialWidth;
-                const deltaHeight = (newBodyHeight + FOOTER_HEIGHT) - initialHeight;
-
-                newLeft = initialLeft - (deltaWidth / 2);
-                newTop = initialTop - (deltaHeight / 2);
-                
-            } else if (eventClientX === null || eventClientY === null) {
-                return;
-                
-            } else {
-                // --- MODO REDIMENSIÓN: BORDE/HANDLE ---
-                
-                let deltaX = eventClientX - initialX;
-                let deltaY = eventClientY - initialY;
-                
-                newWidth = initialWidth;
-                newBodyHeight = initialHeight - FOOTER_HEIGHT;
-                
-                // Ajustar Posición y Tamaño base según la Dirección (Resize por Borde/Esquina)
-                if (resizeDirection.includes('left')) {
-                    newWidth = Math.max(initialWidth - deltaX, MIN_WIDTH);
-                    newLeft = initialLeft + (initialWidth - newWidth);
-                } else if (resizeDirection.includes('right') || resizeDirection === 'handle') {
-                    newWidth = Math.max(initialWidth + deltaX, MIN_WIDTH);
-                }
-
-                if (resizeDirection.includes('top')) {
-                    let newHeight = Math.max(initialHeight - deltaY, MIN_HEIGHT);
-                    newBodyHeight = newHeight - FOOTER_HEIGHT;
-                    newTop = initialTop + (initialHeight - newHeight);
-                } else if (resizeDirection.includes('bottom') || resizeDirection === 'handle' || resizeDirection === 'bottom-right') {
-                    let newHeight = Math.max(initialHeight + deltaY, MIN_HEIGHT);
-                    newBodyHeight = newHeight - FOOTER_HEIGHT;
-                }
-                
-                // Mantener Proporción (Aspect Ratio) si no es un redimensionamiento de borde simple
-                const isSideOnly = ['top', 'bottom', 'left', 'right'].includes(resizeDirection);
-                
-                if (!isSideOnly && initialRatio) {
-                    // Guiar por el eje que más se ha movido para calcular la nueva dimensión proporcional
-                    let currentHeight = newBodyHeight + FOOTER_HEIGHT;
-                    
-                    if (Math.abs(newWidth - initialWidth) > Math.abs(currentHeight - initialHeight)) {
-                        newBodyHeight = newWidth / initialRatio;
-                    } else {
-                        newWidth = newBodyHeight * initialRatio;
-                    }
-                    
-                    // Recalcular newLeft y newTop después del ajuste proporcional (solo si es borde superior/izquierdo)
-                    if (resizeDirection.includes('left')) {
-                        newLeft = initialLeft + (initialWidth - newWidth);
-                    }
-                    if (resizeDirection.includes('top')) {
-                        newTop = initialTop + (initialHeight - (newBodyHeight + FOOTER_HEIGHT));
-                    }
-                }
-                
-                // Asegurar un ancho/alto mínimo
-                newWidth = Math.max(newWidth, MIN_WIDTH);
-                newBodyHeight = Math.max(newBodyHeight, MIN_HEIGHT - FOOTER_HEIGHT);
-            } 
-            
-            if (!newWidth || !newBodyHeight) return; 
-
-            // --- LÍMITES Y APLICACIÓN FINAL ---
-            let newHeight = newBodyHeight + FOOTER_HEIGHT;
-
-            if (newWidth >= MIN_WIDTH && newHeight >= MIN_HEIGHT) {
-                
-                // 1. Limitar posición (para que la ventana no se salga por la izquierda/arriba)
-                let finalLeft = Math.min(Math.max(newLeft, MIN_LEFT), viewportWidth - newWidth - BODY_MARGIN);
-                let finalTop = Math.min(Math.max(newTop, MIN_TOP), viewportHeight - newHeight - BODY_MARGIN);
-                
-                // 2. Limitar tamaño (para que no se salga por la derecha/abajo)
-                let maxPossibleWidth = viewportWidth - finalLeft - BODY_MARGIN;
-                let maxPossibleHeight = viewportHeight - finalTop - BODY_MARGIN;
-
-                newWidth = Math.min(newWidth, maxPossibleWidth);
-                newHeight = Math.min(newHeight, maxPossibleHeight);
-                
-                // 3. Reajuste de proporción si el límite cortó un eje
-                if (!isSideOnly && initialRatio) {
-                    newBodyHeight = newWidth / initialRatio;
-                    newHeight = newBodyHeight + FOOTER_HEIGHT;
-                    
-                    if (newHeight > maxPossibleHeight) {
-                        newHeight = maxPossibleHeight;
-                        newBodyHeight = newHeight - FOOTER_HEIGHT;
-                        newWidth = newBodyHeight * initialRatio;
-                    }
-                }
-                
-                // 4. Aplicar
-                activeItem.style.width = newWidth + 'px';
-                activeItem.style.height = newHeight + 'px';
-                activeItem.style.left = finalLeft + 'px';
-                activeItem.style.top = finalTop + 'px';
-
-                updateDimensionsText(activeItem);
-            }
-
-        } else {
-            // Modo Arrastre
-            if (eventClientX === null || eventClientY === null) return; 
-            
-            currentX = eventClientX - xOffset;
-            currentY = eventClientY - yOffset;
-
-            const itemWidth = activeItem.offsetWidth;
-            const itemHeight = activeItem.offsetHeight;
-
-            const maxX = viewportWidth - itemWidth - BODY_MARGIN;
-            const maxY = viewportHeight - itemHeight - BODY_MARGIN;
-
-            currentX = Math.min(Math.max(currentX, MIN_LEFT), maxX);
-            currentY = Math.min(Math.max(currentY, MIN_TOP), maxY);
-
-            activeItem.style.left = currentX + 'px';
-            activeItem.style.top = currentY + 'px';
-        }
+        return;
     }
+    
+    e.preventDefault();
+
+    const isTouch = e.type.includes('touch');
+    const eventClientX = isTouch ? (e.touches[0] ? e.touches[0].clientX : null) : e.clientX;
+    const eventClientY = isTouch ? (e.touches[0] ? e.touches[0].clientY : null) : e.clientY;
+
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+    const MIN_LEFT = BODY_MARGIN;
+    const MIN_TOP = BODY_MARGIN;
+    
+    // Nueva declaración al inicio para evitar el ReferenceError
+    let isSideOnly = false; 
+
+    if (isResizing) {
+        let newWidth, newBodyHeight, newLeft, newTop;
+        newLeft = initialLeft;
+        newTop = initialTop;
+
+        if (isPinching && isTouch && e.touches.length === 2) {
+            // --- MODO REDIMENSIÓN: PELLIZCO ---
+            const currentDx = e.touches[0].clientX - e.touches[1].clientX;
+            const currentDy = e.touches[0].clientY - e.touches[1].clientY;
+            const currentDistance = Math.sqrt(currentDx * currentDx + currentDy * currentDy);
+            
+            const scaleFactor = currentDistance / initialDistance;
+
+            newWidth = initialWidth * scaleFactor;
+            newBodyHeight = (initialHeight - FOOTER_HEIGHT) * scaleFactor;
+
+            const deltaWidth = newWidth - initialWidth;
+            const deltaHeight = (newBodyHeight + FOOTER_HEIGHT) - initialHeight;
+
+            newLeft = initialLeft - (deltaWidth / 2);
+            newTop = initialTop - (deltaHeight / 2);
+            
+        } else if (eventClientX === null || eventClientY === null) {
+            return;
+            
+        } else {
+            // --- MODO REDIMENSIÓN: BORDE/HANDLE ---
+            
+            let deltaX = eventClientX - initialX;
+            let deltaY = eventClientY - initialY;
+            
+            newWidth = initialWidth;
+            newBodyHeight = initialHeight - FOOTER_HEIGHT;
+            
+            // Ajustar Posición y Tamaño base según la Dirección (Resize por Borde/Esquina)
+            if (resizeDirection.includes('left')) {
+                newWidth = Math.max(initialWidth - deltaX, MIN_WIDTH);
+                newLeft = initialLeft + (initialWidth - newWidth);
+            } else if (resizeDirection.includes('right') || resizeDirection === 'handle') {
+                newWidth = Math.max(initialWidth + deltaX, MIN_WIDTH);
+            }
+
+            if (resizeDirection.includes('top')) {
+                let newHeight = Math.max(initialHeight - deltaY, MIN_HEIGHT);
+                newBodyHeight = newHeight - FOOTER_HEIGHT;
+                newTop = initialTop + (initialHeight - newHeight);
+            } else if (resizeDirection.includes('bottom') || resizeDirection === 'handle' || resizeDirection === 'bottom-right') {
+                let newHeight = Math.max(initialHeight + deltaY, MIN_HEIGHT);
+                newBodyHeight = newHeight - FOOTER_HEIGHT;
+            }
+            
+            // Re-asignación de isSideOnly DENTRO de este bloque 'else'
+            isSideOnly = ['top', 'bottom', 'left', 'right'].includes(resizeDirection);
+            
+            if (!isSideOnly && initialRatio) {
+                // Guiar por el eje que más se ha movido para calcular la nueva dimensión proporcional
+                let currentHeight = newBodyHeight + FOOTER_HEIGHT;
+                
+                if (Math.abs(newWidth - initialWidth) > Math.abs(currentHeight - initialHeight)) {
+                    newBodyHeight = newWidth / initialRatio;
+                } else {
+                    newWidth = newBodyHeight * initialRatio;
+                }
+                
+                // Recalcular newLeft y newTop después del ajuste proporcional (solo si es borde superior/izquierdo)
+                if (resizeDirection.includes('left')) {
+                    newLeft = initialLeft + (initialWidth - newWidth);
+                }
+                if (resizeDirection.includes('top')) {
+                    newTop = initialTop + (initialHeight - (newBodyHeight + FOOTER_HEIGHT));
+                }
+            }
+            
+            // Asegurar un ancho/alto mínimo
+            newWidth = Math.max(newWidth, MIN_WIDTH);
+            newBodyHeight = Math.max(newBodyHeight, MIN_HEIGHT - FOOTER_HEIGHT);
+        } 
+        
+        if (!newWidth || !newBodyHeight) return; 
+
+        // --- LÍMITES Y APLICACIÓN FINAL ---
+        let newHeight = newBodyHeight + FOOTER_HEIGHT;
+
+        if (newWidth >= MIN_WIDTH && newHeight >= MIN_HEIGHT) {
+            
+            // 1. Limitar posición (para que la ventana no se salga por la izquierda/arriba)
+            let finalLeft = Math.min(Math.max(newLeft, MIN_LEFT), viewportWidth - newWidth - BODY_MARGIN);
+            let finalTop = Math.min(Math.max(newTop, MIN_TOP), viewportHeight - newHeight - BODY_MARGIN);
+            
+            // 2. Limitar tamaño (para que no se salga por la derecha/abajo)
+            let maxPossibleWidth = viewportWidth - finalLeft - BODY_MARGIN;
+            let maxPossibleHeight = viewportHeight - finalTop - BODY_MARGIN;
+
+            newWidth = Math.min(newWidth, maxPossibleWidth);
+            newHeight = Math.min(newHeight, maxPossibleHeight);
+            
+            // 3. Reajuste de proporción si el límite cortó un eje
+            if (!isSideOnly && initialRatio) { // isSideOnly siempre estará definida aquí
+                newBodyHeight = newWidth / initialRatio;
+                newHeight = newBodyHeight + FOOTER_HEIGHT;
+                
+                if (newHeight > maxPossibleHeight) {
+                    newHeight = maxPossibleHeight;
+                    newBodyHeight = newHeight - FOOTER_HEIGHT;
+                    newWidth = newBodyHeight * initialRatio;
+                }
+            }
+            
+            // 4. Aplicar
+            activeItem.style.width = newWidth + 'px';
+            activeItem.style.height = newHeight + 'px';
+            activeItem.style.left = finalLeft + 'px';
+            activeItem.style.top = finalTop + 'px';
+
+            updateDimensionsText(activeItem);
+        }
+
+    } else {
+        // Modo Arrastre
+        if (eventClientX === null || eventClientY === null) return; 
+        
+        currentX = eventClientX - xOffset;
+        currentY = eventClientY - yOffset;
+
+        const itemWidth = activeItem.offsetWidth;
+        const itemHeight = activeItem.offsetHeight;
+
+        const maxX = viewportWidth - itemWidth - BODY_MARGIN;
+        const maxY = viewportHeight - itemHeight - BODY_MARGIN;
+
+        currentX = Math.min(Math.max(currentX, MIN_LEFT), maxX);
+        currentY = Math.min(Math.max(currentY, MIN_TOP), maxY);
+
+        activeItem.style.left = currentX + 'px';
+        activeItem.style.top = currentY + 'px';
+    }
+}
 
 
     /* ==================== EVENT HANDLER (END) ==================== */
