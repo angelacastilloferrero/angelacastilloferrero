@@ -18,11 +18,11 @@ body {
 }
 
 ::selection {
-  background: #110022; /* Fondo casi negro */
-  color: #c9fff3; /* Texto de color aqua/menta brillante */
-  text-shadow: 
-    0 0 5px #14e0c8, /* Resplandor azul claro */
-    0 0 10px #7b4397; /* Resplandor morado más sutil */
+  /* Establece el texto con una ligera transparencia */
+  color: rgba(255, 255, 255, 0.9);
+  
+  /* Usa un color sólido de fondo (propiedad permitida) */
+  background: #ff66aa; 
 }
 
 
